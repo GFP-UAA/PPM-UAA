@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="PPM.UI.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Border Width="380"
+                Padding="32"
+                CornerRadius="12"
+                Background="{StaticResource SurfaceBrush}"
+                BorderThickness="1"
+                BorderBrush="{StaticResource BorderBrush}"
+                BoxShadow="0 4 24 0 #14000000"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+            <StackPanel Spacing="14">
+                <TextBlock Text="PPM"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="Personal Process Manager"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           HorizontalAlignment="Center" />
+
+                <TextBox Watermark="Usuario"
+                         Text="{Binding Username, Mode=TwoWay}" />
+
+                <TextBox Watermark="Contraseña"
+                         PasswordChar="•"
+                         Text="{Binding Password, Mode=TwoWay}" />
+
+                <TextBox Watermark="Confirmar contraseña (solo para registro)"
+                         PasswordChar="•"
+                         Text="{Binding ConfirmPassword, Mode=TwoWay}" />
+
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="{StaticResource DangerBrush}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                <Button Content="Iniciar sesión"
+                        Classes="accent"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="{Binding !IsLoading}"
+                        Command="{Binding LoginCommand}" />
+
+                <Button Content="Registrarse"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        IsEnabled="{Binding !IsLoading}"
+                        Command="{Binding RegisterCommand}" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

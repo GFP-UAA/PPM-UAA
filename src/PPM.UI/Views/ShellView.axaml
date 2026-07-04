@@ -1,0 +1,59 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="PPM.UI.Views.ShellView"
+             x:DataType="vm:ShellViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button.nav">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="Margin" Value="8,2" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2E3D52" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid ColumnDefinitions="220,*" Background="{StaticResource BackgroundBrush}">
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="16,20,16,10" Spacing="2">
+                    <TextBlock Text="PPM" Foreground="{StaticResource OnColorBrush}" FontSize="22" FontWeight="Bold" />
+                    <TextBlock Text="Personal Process Manager" Foreground="{StaticResource OnColorMutedBrush}" FontSize="11" />
+                </StackPanel>
+
+                <!-- El cierre de sesión va anclado abajo, separado del resto del menú -->
+                <Button DockPanel.Dock="Bottom" Classes="nav" Command="{Binding LogoutCommand}"
+                        Content="Cerrar sesión" Margin="8,2,8,14" />
+
+                <StackPanel Spacing="2">
+                    <Button Classes="nav" Command="{Binding NavigateDashboardCommand}" Content="Dashboard"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Dashboard}" />
+                    <Button Classes="nav" Command="{Binding NavigateSalaryCommand}" Content="Salario"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Salario}" />
+                    <Button Classes="nav" Command="{Binding NavigateDebtsCommand}" Content="Deudas"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Deudas}" />
+                    <Button Classes="nav" Command="{Binding NavigateCreditCardsCommand}" Content="Tarjetas"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Tarjetas}" />
+                    <Button Classes="nav" Command="{Binding NavigateExpensesCommand}" Content="Gastos"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Gastos}" />
+                    <Button Classes="nav" Command="{Binding NavigateAboutCommand}" Content="Acerca de"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter='Acerca de'}" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Área de contenido -->
+        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" />
+    </Grid>
+</UserControl>

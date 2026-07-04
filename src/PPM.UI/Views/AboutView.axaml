@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="600"
+             x:Class="PPM.UI.Views.AboutView"
+             x:DataType="vm:AboutViewModel">
+    <StackPanel Margin="28" Spacing="16" MaxWidth="520" HorizontalAlignment="Left">
+        <TextBlock Text="Acerca de" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+
+        <Border Padding="24" CornerRadius="12" Background="{StaticResource SidebarBrush}">
+            <StackPanel Spacing="6">
+                <TextBlock Text="{Binding AppName}" Foreground="{StaticResource OnColorBrush}" FontSize="20" FontWeight="Bold" />
+                <TextBlock Text="{Binding Version, StringFormat='Versión {0}'}" Foreground="{StaticResource OnColorMutedBrush}" />
+                <TextBlock Text="{Binding Description}" Foreground="{StaticResource OnColorBrush}" TextWrapping="Wrap" Margin="0,8,0,0" />
+            </StackPanel>
+        </Border>
+
+        <Border Padding="20" CornerRadius="12" Background="{StaticResource SurfaceBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Equipo de desarrollo" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
+                <ItemsControl ItemsSource="{Binding TeamMembers}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding}" Margin="0,3" Foreground="{StaticResource TextPrimaryBrush}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

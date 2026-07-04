@@ -1,0 +1,37 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PPM.UI.App"
+             xmlns:local="clr-namespace:PPM.UI"
+             xmlns:conv="clr-namespace:PPM.UI.Converters"
+             RequestedThemeVariant="Light">
+
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://PPM.UI/Styles/Theme.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:GuaraniConverter x:Key="Guarani" />
+            <conv:ModuleActiveConverter x:Key="ModuleActive" />
+            <conv:SignToBrushConverter x:Key="SignToBrush" />
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+
+        <!-- Botón de acento (acción primaria) -->
+        <Style Selector="Button.accent">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource OnColorBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2560D0" />
+            <Setter Property="Foreground" Value="{StaticResource OnColorBrush}" />
+        </Style>
+    </Application.Styles>
+</Application>

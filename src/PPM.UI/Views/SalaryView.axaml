@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             xmlns:dto="clr-namespace:PPM.Application.DTOs;assembly=PPM.Application"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="600"
+             x:Class="PPM.UI.Views.SalaryView"
+             x:DataType="vm:SalaryViewModel">
+    <ScrollViewer>
+        <StackPanel Margin="28" Spacing="18">
+            <TextBlock Text="Salario" FontSize="26" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+
+            <!-- Salario vigente -->
+            <Border Padding="20" CornerRadius="12" Background="{StaticResource AccentBrush}">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Salario neto vigente" Foreground="{StaticResource OnColorMutedBrush}" />
+                    <TextBlock Text="{Binding CurrentSalary.NetAmount, Converter={StaticResource Guarani}, FallbackValue='Sin registrar'}"
+                               Foreground="{StaticResource OnColorBrush}" FontSize="24" FontWeight="Bold" />
+                    <TextBlock Foreground="{StaticResource OnColorMutedBrush}" FontSize="12"
+                               IsVisible="{Binding CurrentSalary, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Text="{Binding CurrentSalary.Amount, Converter={StaticResource Guarani}, StringFormat='Bruto: {0}'}" />
+                    <TextBlock Foreground="{StaticResource OnColorMutedBrush}" FontSize="12"
+                               IsVisible="{Binding CurrentSalary, Converter={x:Static ObjectConverters.IsNotNull}}"
+                               Text="{Binding CurrentSalary.EffectiveFrom, StringFormat='Vigente desde {0:dd/MM/yyyy}'}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Registrar nuevo salario -->
+            <Border Padding="20" CornerRadius="12" Background="{StaticResource SurfaceBrush}"
+                    BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Registrar / actualizar salario" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Monto bruto (₲)" VerticalAlignment="Center" Margin="0,0,12,8" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <NumericUpDown Grid.Row="0" Grid.Column="1" Margin="0,0,0,8"
+                                       Minimum="0" Increment="100000" FormatString="N0"
+                                       Value="{Binding NewAmount}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Vigente desde" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding EffectiveFrom}" />
+                    </Grid>
+
+                    <CheckBox Content="¿Aporta a IPS? (descuenta 9% del bruto)" IsChecked="{Binding ContributesToIps}"
+                              Foreground="{StaticResource TextPrimaryBrush}" />
+
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PositiveBrush}" TextWrapping="Wrap"
+                               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+                    <Button Content="Guardar salario" Classes="accent" HorizontalAlignment="Left"
+                            IsEnabled="{Binding !IsLoading}" Command="{Binding SaveCommand}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Historial -->
+            <Border Padding="20" CornerRadius="12" Background="{StaticResource SurfaceBrush}"
+                    BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Historial de salarios" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <Grid ColumnDefinitions="*,*,*" Margin="0,0,0,4">
+                        <TextBlock Grid.Column="0" Text="Bruto" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="Neto" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="2" Text="Vigente desde" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding History}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="dto:SalaryDto">
+                                <Grid ColumnDefinitions="*,*,*" Margin="0,3">
+                                    <TextBlock Grid.Column="0" Text="{Binding Amount, Converter={StaticResource Guarani}}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding NetAmount, Converter={StaticResource Guarani}}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding EffectiveFrom, StringFormat='{}{0:dd/MM/yyyy}'}" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

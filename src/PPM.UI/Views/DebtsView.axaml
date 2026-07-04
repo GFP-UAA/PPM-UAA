@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             xmlns:dto="clr-namespace:PPM.Application.DTOs;assembly=PPM.Application"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="600"
+             x:Class="PPM.UI.Views.DebtsView"
+             x:DataType="vm:DebtsViewModel">
+    <Grid Margin="28" RowDefinitions="Auto,Auto,*">
+        <TextBlock Grid.Row="0" Text="Deudas" FontSize="26" FontWeight="Bold" Margin="0,0,0,12"
+                   Foreground="{StaticResource TextPrimaryBrush}" />
+
+        <StackPanel Grid.Row="1" Spacing="2" Margin="0,0,0,10">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PositiveBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,340">
+            <!-- Lista -->
+            <Border Grid.Column="0" Margin="0,0,16,0" Padding="12" CornerRadius="12"
+                    Background="{StaticResource SurfaceBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="2*,*,*" Margin="4,0,4,6">
+                        <TextBlock Grid.Column="0" Text="Entidad / Producto" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="Cuota" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="2" Text="Restantes" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Grid>
+                    <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="dto:DebtDto">
+                                <Grid ColumnDefinitions="2*,*,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding EntityName}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Text="{Binding ProductOrService}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"
+                                               Text="{Binding MonthlyPayment, Converter={StaticResource Guarani}}" />
+                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                        <TextBlock Foreground="{StaticResource TextPrimaryBrush}"
+                                                   Text="{Binding RemainingInstallments, FallbackValue='Indefinido', TargetNullValue='Indefinido'}" />
+                                        <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                                   IsVisible="{Binding EstimatedPayoffDate, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                   Text="{Binding EstimatedPayoffDate, StringFormat='Fin: {0:MM/yyyy}'}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Formulario -->
+            <Border Grid.Column="1" Padding="16" CornerRadius="12"
+                    Background="{StaticResource SurfaceBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <ScrollViewer>
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Detalle de la deuda" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Entidad" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBox Text="{Binding EntityName}" />
+                        <TextBlock Text="Producto o servicio" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBox Text="{Binding ProductOrService}" />
+                        <TextBlock Text="Descripción" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBox Text="{Binding Description}" AcceptsReturn="True" Height="54" TextWrapping="Wrap" />
+                        <TextBlock Text="Monto de la cuota (₲)" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <NumericUpDown Minimum="0" Increment="100000" FormatString="N0" Value="{Binding InstallmentAmount}" />
+
+                        <CheckBox Content="Plazo indefinido" IsChecked="{Binding IsOpenEnded}" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Plazo (meses)" Foreground="{StaticResource TextSecondaryBrush}" IsVisible="{Binding IsTermEnabled}" />
+                        <NumericUpDown Minimum="1" Increment="1" FormatString="0" Value="{Binding TermMonths}" IsVisible="{Binding IsTermEnabled}" />
+
+                        <TextBlock Text="Cuota actual (nro)" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <NumericUpDown Minimum="0" Increment="1" FormatString="0" Value="{Binding CurrentInstallment}" />
+                        <TextBlock Text="Fecha de inicio" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <DatePicker SelectedDate="{Binding StartDate}" />
+                        <TextBlock Text="Estado" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding Status}" HorizontalAlignment="Stretch" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+                            <Button Content="Nuevo" Command="{Binding NewCommand}" />
+                            <Button Content="Guardar" Classes="accent" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsLoading}" />
+                            <Button Content="Eliminar" Command="{Binding DeleteCommand}" IsEnabled="{Binding IsEditing}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

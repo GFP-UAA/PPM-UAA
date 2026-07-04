@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="640"
+             x:Class="PPM.UI.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+    <ScrollViewer>
+        <StackPanel Margin="28" Spacing="18">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Grid.Column="0" Text="Dashboard" FontSize="26" FontWeight="Bold" VerticalAlignment="Center"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                <Button Grid.Column="1" Content="Actualizar" Margin="0,0,8,0"
+                        IsEnabled="{Binding !IsLoading}" Command="{Binding ReloadCommand}" />
+                <Button Grid.Column="2" Content="Exportar CSV" Classes="accent"
+                        IsEnabled="{Binding !IsLoading}" Command="{Binding ExportCsvCommand}" />
+            </Grid>
+
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PositiveBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <WrapPanel>
+                <Border Margin="0,0,16,16" Padding="20" Width="220" CornerRadius="12" Background="{StaticResource AccentBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Salario neto del mes" Foreground="{StaticResource OnColorMutedBrush}" />
+                        <TextBlock Text="{Binding CurrentSalary, Converter={StaticResource Guarani}}"
+                                   Foreground="{StaticResource OnColorBrush}" FontSize="20" FontWeight="Bold" />
+                        <TextBlock Text="{Binding GrossSalary, Converter={StaticResource Guarani}, StringFormat='Bruto: {0}'}"
+                                   Foreground="{StaticResource OnColorMutedBrush}" FontSize="11" />
+                        <TextBlock Text="{Binding IpsDiscount, Converter={StaticResource Guarani}, StringFormat='IPS 9%: -{0}'}"
+                                   Foreground="{StaticResource OnColorMutedBrush}" FontSize="11" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Saldo: color por signo -->
+                <Border Margin="0,0,16,16" Padding="20" Width="220" CornerRadius="12"
+                        Background="{Binding AvailableBalance, Converter={StaticResource SignToBrush}}">
+                    <StackPanel>
+                        <TextBlock Text="Saldo disponible" Foreground="{StaticResource OnColorMutedBrush}" />
+                        <TextBlock Text="{Binding AvailableBalance, Converter={StaticResource Guarani}}"
+                                   Foreground="{StaticResource OnColorBrush}" FontSize="20" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,16,16" Padding="20" Width="220" CornerRadius="12" Background="{StaticResource DangerBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Cuotas de deudas (mes)" Foreground="{StaticResource OnColorMutedBrush}" />
+                        <TextBlock Text="{Binding TotalDebts, Converter={StaticResource Guarani}}"
+                                   Foreground="{StaticResource OnColorBrush}" FontSize="20" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ActiveDebtsCount, StringFormat='{}{0} deuda(s) activa(s)'}"
+                                   Foreground="{StaticResource OnColorMutedBrush}" FontSize="11" />
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,0,16,16" Padding="20" Width="220" CornerRadius="12" Background="{StaticResource WarningBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Gastos del mes" Foreground="{StaticResource OnColorMutedBrush}" />
+                        <TextBlock Text="{Binding TotalExpenses, Converter={StaticResource Guarani}}"
+                                   Foreground="{StaticResource OnColorBrush}" FontSize="20" FontWeight="Bold" />
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <!-- Resumen de tarjetas -->
+            <Border Padding="20" CornerRadius="12" Background="{StaticResource SurfaceBrush}"
+                    BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Resumen de tarjetas de crédito" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Tarjetas registradas" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding CreditCardsCount}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Deuda total (saldo actual)" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TotalCreditDebt, Converter={StaticResource Guarani}}" FontWeight="SemiBold" Foreground="{StaticResource DangerBrush}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Interés del mes" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TotalCreditInterest, Converter={StaticResource Guarani}}" FontWeight="SemiBold" Foreground="{StaticResource WarningBrush}" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Pago mínimo total" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding TotalCreditMinimumPayments, Converter={StaticResource Guarani}}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Comparativa de gastos -->
+            <Border Padding="20" CornerRadius="12" Background="{StaticResource SurfaceBrush}"
+                    BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Comparativa de gastos" FontWeight="SemiBold" FontSize="16" Foreground="{StaticResource TextPrimaryBrush}" />
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Mes anterior" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PreviousMonthExpenses, Converter={StaticResource Guarani}}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Variación (₲)" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ExpenseDelta, Converter={StaticResource Guarani}}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Variación (%)" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ExpenseDeltaPercentage, StringFormat='{}{0} %'}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
