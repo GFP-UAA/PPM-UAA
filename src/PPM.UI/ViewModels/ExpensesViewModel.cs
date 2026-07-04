@@ -20,13 +20,13 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
     // --- Formulario ---
     [ObservableProperty] private int? _editingId;
     [ObservableProperty] private string _description = string.Empty;
-    [ObservableProperty] private decimal _amount;
+    [ObservableProperty] private decimal? _amount;
     [ObservableProperty] private ExpenseType _type = ExpenseType.Other;
     [ObservableProperty] private DateTimeOffset? _date = DateTimeOffset.Now;
 
     // --- Resumen mensual ---
-    [ObservableProperty] private int _summaryMonth = DateTime.Now.Month;
-    [ObservableProperty] private int _summaryYear = DateTime.Now.Year;
+    [ObservableProperty] private int? _summaryMonth = DateTime.Now.Month;
+    [ObservableProperty] private int? _summaryYear = DateTime.Now.Year;
     [ObservableProperty] private decimal _monthlyTotal;
     [ObservableProperty] private decimal _salaryPercentage;
     [ObservableProperty] private decimal _previousMonthTotal;
@@ -46,11 +46,14 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
 
     private async Task RefreshSummaryInternalAsync()
     {
-        var summary = await expenseService.GetMonthlySummaryAsync(UserId, SummaryMonth, SummaryYear);
+        if (SummaryMonth is null || SummaryYear is null)
+            return;
+
+        var summary = await expenseService.GetMonthlySummaryAsync(UserId, SummaryMonth.Value, SummaryYear.Value);
         MonthlyTotal = summary.Total;
         SalaryPercentage = summary.SalaryPercentage;
 
-        var prev = new DateTime(SummaryYear, SummaryMonth, 1).AddMonths(-1);
+        var prev = new DateTime(SummaryYear.Value, SummaryMonth.Value, 1).AddMonths(-1);
         PreviousMonthTotal = await expenseService.GetMonthlyTotalAsync(UserId, prev.Month, prev.Year);
         MonthDelta = MonthlyTotal - PreviousMonthTotal;
         MonthDeltaPercentage = PreviousMonthTotal > 0
@@ -101,7 +104,7 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
             ErrorMessage = "La descripción del gasto es obligatoria.";
             return;
         }
-        if (Amount <= 0)
+        if (Amount is null || Amount <= 0)
         {
             ErrorMessage = "El monto del gasto debe ser mayor a cero.";
             return;
@@ -111,12 +114,12 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
         {
             if (EditingId is null)
             {
-                await expenseService.CreateAsync(new CreateExpenseDto(UserId, Description, Amount, Type, (Date ?? DateTimeOffset.Now).DateTime));
+                await expenseService.CreateAsync(new CreateExpenseDto(UserId, Description, Amount.Value, Type, (Date ?? DateTimeOffset.Now).DateTime));
                 StatusMessage = "Gasto creado correctamente.";
             }
             else
             {
-                var ok = await expenseService.UpdateAsync(new UpdateExpenseDto(EditingId.Value, Description, Amount, Type, (Date ?? DateTimeOffset.Now).DateTime));
+                var ok = await expenseService.UpdateAsync(new UpdateExpenseDto(EditingId.Value, Description, Amount.Value, Type, (Date ?? DateTimeOffset.Now).DateTime));
                 StatusMessage = ok ? "Gasto actualizado correctamente." : "No se pudo actualizar el gasto.";
             }
 

@@ -10,7 +10,7 @@ namespace PPM.UI.ViewModels;
 
 public partial class SalaryViewModel(ISalaryService salaryService) : ModuleViewModelBase
 {
-    [ObservableProperty] private decimal _newAmount;
+    [ObservableProperty] private decimal? _newAmount;
     [ObservableProperty] private DateTimeOffset? _effectiveFrom = DateTimeOffset.Now;
     [ObservableProperty] private bool _contributesToIps = true;
 
@@ -33,7 +33,7 @@ public partial class SalaryViewModel(ISalaryService salaryService) : ModuleViewM
         StatusMessage = null;
         ErrorMessage = null;
 
-        if (NewAmount <= 0)
+        if (NewAmount is null || NewAmount <= 0)
         {
             ErrorMessage = "El monto del salario debe ser mayor a cero.";
             return;
@@ -41,8 +41,8 @@ public partial class SalaryViewModel(ISalaryService salaryService) : ModuleViewM
 
         await RunGuardedAsync(async () =>
         {
-            await salaryService.CreateAsync(new CreateSalaryDto(UserId, NewAmount, (EffectiveFrom ?? DateTimeOffset.Now).DateTime, ContributesToIps));
-            NewAmount = 0;
+            await salaryService.CreateAsync(new CreateSalaryDto(UserId, NewAmount.Value, (EffectiveFrom ?? DateTimeOffset.Now).DateTime, ContributesToIps));
+            NewAmount = null;
             EffectiveFrom = DateTimeOffset.Now;
             await LoadAsync();
             StatusMessage = "Salario registrado correctamente.";

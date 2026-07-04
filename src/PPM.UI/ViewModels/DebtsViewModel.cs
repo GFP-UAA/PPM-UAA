@@ -22,10 +22,10 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
     [ObservableProperty] private string _entityName = string.Empty;
     [ObservableProperty] private string _productOrService = string.Empty;
     [ObservableProperty] private string _description = string.Empty;
-    [ObservableProperty] private decimal _installmentAmount;
-    [ObservableProperty] private int _termMonths = 1;
+    [ObservableProperty] private decimal? _installmentAmount;
+    [ObservableProperty] private int? _termMonths = 1;
     [ObservableProperty] private bool _isOpenEnded;
-    [ObservableProperty] private int _currentInstallment;
+    [ObservableProperty] private int? _currentInstallment;
     [ObservableProperty] private DateTimeOffset? _startDate = DateTimeOffset.Now;
     [ObservableProperty] private DebtStatus _status = DebtStatus.Active;
 
@@ -93,17 +93,17 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
             ErrorMessage = "El nombre de la entidad es obligatorio.";
             return;
         }
-        if (InstallmentAmount <= 0)
+        if (InstallmentAmount is null || InstallmentAmount <= 0)
         {
             ErrorMessage = "El monto de la cuota debe ser mayor a cero.";
             return;
         }
-        if (!IsOpenEnded && TermMonths <= 0)
+        if (!IsOpenEnded && (TermMonths is null || TermMonths <= 0))
         {
             ErrorMessage = "El plazo en meses debe ser mayor a cero (o marcá plazo indefinido).";
             return;
         }
-        if (CurrentInstallment < 0)
+        if (CurrentInstallment is null || CurrentInstallment < 0)
         {
             ErrorMessage = "El número de cuota actual no puede ser negativo.";
             return;
@@ -117,7 +117,7 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
             {
                 await debtService.CreateAsync(new CreateDebtDto(
                     UserId, EntityName, ProductOrService, Description,
-                    InstallmentAmount, term, IsOpenEnded, CurrentInstallment,
+                    InstallmentAmount.Value, term, IsOpenEnded, CurrentInstallment ?? 0,
                     (StartDate ?? DateTimeOffset.Now).DateTime));
                 StatusMessage = "Deuda creada correctamente.";
             }
@@ -125,7 +125,7 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
             {
                 var ok = await debtService.UpdateAsync(new UpdateDebtDto(
                     EditingId.Value, EntityName, ProductOrService, Description,
-                    InstallmentAmount, term, IsOpenEnded, CurrentInstallment, Status));
+                    InstallmentAmount.Value, term, IsOpenEnded, CurrentInstallment ?? 0, Status));
                 StatusMessage = ok ? "Deuda actualizada correctamente." : "No se pudo actualizar la deuda.";
             }
 

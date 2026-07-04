@@ -20,17 +20,17 @@ public partial class CreditCardsViewModel(ICreditCardService creditCardService) 
     // --- Formulario CRUD ---
     [ObservableProperty] private int? _editingId;
     [ObservableProperty] private string _name = string.Empty;
-    [ObservableProperty] private decimal _availableBalance;
-    [ObservableProperty] private decimal _initialBalance;
-    [ObservableProperty] private decimal _monthlyInterestRate;
-    [ObservableProperty] private int _closingDay = 1;
+    [ObservableProperty] private decimal? _availableBalance;
+    [ObservableProperty] private decimal? _initialBalance;
+    [ObservableProperty] private decimal? _monthlyInterestRate;
+    [ObservableProperty] private int? _closingDay = 1;
 
     // --- Movimientos / cierre ---
-    [ObservableProperty] private decimal _consumoAmount;
+    [ObservableProperty] private decimal? _consumoAmount;
     [ObservableProperty] private string _consumoDescription = string.Empty;
-    [ObservableProperty] private decimal _pagoAmount;
+    [ObservableProperty] private decimal? _pagoAmount;
     [ObservableProperty] private string _pagoDescription = string.Empty;
-    [ObservableProperty] private decimal _closingAmount;
+    [ObservableProperty] private decimal? _closingAmount;
     [ObservableProperty] private string? _actionMessage;
 
     public bool IsEditing => EditingId is not null;
@@ -114,12 +114,12 @@ public partial class CreditCardsViewModel(ICreditCardService creditCardService) 
             ErrorMessage = "El nombre de la tarjeta es obligatorio.";
             return;
         }
-        if (AvailableBalance < 0 || InitialBalance < 0 || MonthlyInterestRate < 0)
+        if (AvailableBalance is null || AvailableBalance < 0 || InitialBalance is null || InitialBalance < 0 || MonthlyInterestRate is null || MonthlyInterestRate < 0)
         {
             ErrorMessage = "Los montos y la tasa no pueden ser negativos.";
             return;
         }
-        if (ClosingDay is < 1 or > 31)
+        if (ClosingDay is null || ClosingDay is < 1 or > 31)
         {
             ErrorMessage = "El día de cierre debe estar entre 1 y 31.";
             return;
@@ -130,13 +130,13 @@ public partial class CreditCardsViewModel(ICreditCardService creditCardService) 
             if (EditingId is null)
             {
                 await creditCardService.CreateAsync(
-                    new CreateCreditCardDto(UserId, Name, AvailableBalance, InitialBalance, MonthlyInterestRate, ClosingDay));
+                    new CreateCreditCardDto(UserId, Name, AvailableBalance.Value, InitialBalance.Value, MonthlyInterestRate.Value, ClosingDay.Value));
                 StatusMessage = "Tarjeta creada correctamente.";
             }
             else
             {
                 var ok = await creditCardService.UpdateAsync(
-                    new UpdateCreditCardDto(EditingId.Value, Name, AvailableBalance, MonthlyInterestRate, ClosingDay));
+                    new UpdateCreditCardDto(EditingId.Value, Name, AvailableBalance.Value, MonthlyInterestRate.Value, ClosingDay.Value));
                 StatusMessage = ok ? "Tarjeta actualizada correctamente." : "No se pudo actualizar la tarjeta.";
             }
 
@@ -165,17 +165,17 @@ public partial class CreditCardsViewModel(ICreditCardService creditCardService) 
 
     [RelayCommand]
     private Task RegisterConsumoAsync() => RunMovementAsync(
-        () => creditCardService.RegisterConsumoAsync(new RegisterMovementDto(EditingId!.Value, ConsumoAmount, ConsumoDescription)),
+        () => creditCardService.RegisterConsumoAsync(new RegisterMovementDto(EditingId!.Value, ConsumoAmount ?? 0, ConsumoDescription)),
         () => { ConsumoAmount = 0; ConsumoDescription = string.Empty; });
 
     [RelayCommand]
     private Task RegisterPagoAsync() => RunMovementAsync(
-        () => creditCardService.RegisterPaymentAsync(new RegisterMovementDto(EditingId!.Value, PagoAmount, PagoDescription)),
+        () => creditCardService.RegisterPaymentAsync(new RegisterMovementDto(EditingId!.Value, PagoAmount ?? 0, PagoDescription)),
         () => { PagoAmount = 0; PagoDescription = string.Empty; });
 
     [RelayCommand]
     private Task ProcessClosingAsync() => RunMovementAsync(
-        () => creditCardService.ProcessClosingAsync(new RegisterPaymentDto(EditingId!.Value, ClosingAmount)),
+        () => creditCardService.ProcessClosingAsync(new RegisterPaymentDto(EditingId!.Value, ClosingAmount ?? 0)),
         () => { ClosingAmount = 0; });
 
     private async Task RunMovementAsync(Func<Task<PaymentResultDto>> action, Action onSuccess)

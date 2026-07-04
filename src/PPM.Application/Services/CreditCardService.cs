@@ -2,6 +2,8 @@ using PPM.Application.DTOs;
 using PPM.Domain.Entities;
 using PPM.Domain.Enums;
 using PPM.Domain.Interfaces;
+using PPM.Domain.Exceptions;
+using System;
 
 namespace PPM.Application.Services;
 
@@ -9,20 +11,38 @@ public class CreditCardService(ICreditCardRepository creditCardRepository) : ICr
 {
     public async Task<CreditCardDto> CreateAsync(CreateCreditCardDto dto)
     {
-        var card = new CreditCard
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            throw new BusinessRuleException("El nombre de la tarjeta es obligatorio.");
+        if (dto.AvailableBalance < 0)
+            throw new BusinessRuleException("El límite disponible no puede ser negativo.");
+        if (dto.InitialBalance < 0)
+            throw new BusinessRuleException("El saldo inicial no puede ser negativo.");
+        if (dto.MonthlyInterestRate < 0)
+            throw new BusinessRuleException("La tasa de interés no puede ser negativa.");
+        if (dto.ClosingDay < 1 || dto.ClosingDay > 31)
+            throw new BusinessRuleException("El día de cierre debe estar entre 1 y 31.");
+
+        try
         {
-            UserId = dto.UserId,
-            Name = dto.Name,
-            AvailableBalance = dto.AvailableBalance,
-            InitialBalance = dto.InitialBalance,
-            CurrentDebt = dto.InitialBalance, // al crearla, el saldo es el mismo que el inicial
-            MonthlyInterestRate = dto.MonthlyInterestRate,
-            ClosingDay = dto.ClosingDay
-        };
+            var card = new CreditCard
+            {
+                UserId = dto.UserId,
+                Name = dto.Name,
+                AvailableBalance = dto.AvailableBalance,
+                InitialBalance = dto.InitialBalance,
+                CurrentDebt = dto.InitialBalance, // al crearla, el saldo es el mismo que el inicial
+                MonthlyInterestRate = dto.MonthlyInterestRate,
+                ClosingDay = dto.ClosingDay
+            };
 
-        await creditCardRepository.AddAsync(card);
+            await creditCardRepository.AddAsync(card);
 
-        return MapToDto(card);
+            return MapToDto(card);
+        }
+        catch (Exception ex)
+        {
+            throw new BusinessRuleException($"Error al crear la tarjeta de crédito: {ex.Message}");
+        }
     }
 
     public async Task<IEnumerable<CreditCardDto>> GetAllAsync(int userId)
@@ -39,6 +59,15 @@ public class CreditCardService(ICreditCardRepository creditCardRepository) : ICr
 
     public async Task<bool> UpdateAsync(UpdateCreditCardDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Name))
+            throw new BusinessRuleException("El nombre de la tarjeta es obligatorio.");
+        if (dto.AvailableBalance < 0)
+            throw new BusinessRuleException("El límite disponible no puede ser negativo.");
+        if (dto.MonthlyInterestRate < 0)
+            throw new BusinessRuleException("La tasa de interés no puede ser negativa.");
+        if (dto.ClosingDay < 1 || dto.ClosingDay > 31)
+            throw new BusinessRuleException("El día de cierre debe estar entre 1 y 31.");
+
         try
         {
             var card = await creditCardRepository.GetByIdAsync(dto.Id);
@@ -55,9 +84,9 @@ public class CreditCardService(ICreditCardRepository creditCardRepository) : ICr
             await creditCardRepository.UpdateAsync(card);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new BusinessRuleException($"Error al actualizar la tarjeta de crédito: {ex.Message}");
         }
     }
 
@@ -68,9 +97,9 @@ public class CreditCardService(ICreditCardRepository creditCardRepository) : ICr
             await creditCardRepository.DeleteAsync(id);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new BusinessRuleException($"Error al eliminar la tarjeta de crédito: {ex.Message}");
         }
     }
 
