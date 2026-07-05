@@ -19,11 +19,11 @@ public class CreditCard
 
     // Estos cálculos trabajan sobre el saldo actual y se usan al momento del cierre.
     public decimal CalculateMonthlyInterest() =>
-        CurrentDebt * (MonthlyInterestRate / 100);
+     CurrentDebt <= 0 ? 0 : CurrentDebt * (MonthlyInterestRate / 100);
 
     public decimal CalculateTotalDebtWithInterest() =>
-        CurrentDebt + CalculateMonthlyInterest();
+        CurrentDebt <= 0 ? 0 : CurrentDebt + CalculateMonthlyInterest();
 
     public decimal CalculateMinimumPayment() =>
-        CalculateTotalDebtWithInterest() * MinPaymentPercentage;
+        CurrentDebt <= 0 ? 0 : CalculateTotalDebtWithInterest() * MinPaymentPercentage;
 }

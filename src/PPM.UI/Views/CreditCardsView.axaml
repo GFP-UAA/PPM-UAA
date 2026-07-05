@@ -25,7 +25,7 @@
                 <DockPanel>
                     <Grid DockPanel.Dock="Top" ColumnDefinitions="2*,*,*" Margin="4,0,4,6">
                         <TextBlock Grid.Column="0" Text="Tarjeta" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="Saldo" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="Deuda" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="2" Text="Pago mín." FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
                     </Grid>
                     <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Background="Transparent">
@@ -55,7 +55,7 @@
                         <TextBox Text="{Binding Name}" />
                         <TextBlock Text="Límite disponible (₲)" Foreground="{StaticResource TextSecondaryBrush}" />
                         <NumericUpDown Minimum="0" Increment="100000" FormatString="N0" Value="{Binding AvailableBalance}" />
-                        <TextBlock Text="Saldo inicial (₲) — solo al crear" Foreground="{StaticResource TextSecondaryBrush}" />
+						<TextBlock Text="Deuda inicial (₲) — solo al crear"   Foreground="{StaticResource TextSecondaryBrush}" />
                         <NumericUpDown Minimum="0" Increment="100000" FormatString="N0" Value="{Binding InitialBalance}" IsEnabled="{Binding IsNew}" />
                         <TextBlock Text="Tasa de interés mensual (%)" Foreground="{StaticResource TextSecondaryBrush}" />
                         <NumericUpDown Minimum="0" Increment="0.5" FormatString="0.####" Value="{Binding MonthlyInterestRate}" />

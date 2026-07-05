@@ -246,7 +246,7 @@ public class CreditCardService(ICreditCardRepository creditCardRepository) : ICr
     }
 
     // Recalcula el saldo desde cero: parte del saldo inicial, suma todos los consumos
-    // y resta todos los pagos. Nunca queda por debajo de cero.
+    // y resta todos los pagos. 
     private async Task RecomputeBalanceAsync(CreditCard card)
     {
         var movements = await creditCardRepository.GetMovementsAsync(card.Id);
@@ -254,7 +254,7 @@ public class CreditCardService(ICreditCardRepository creditCardRepository) : ICr
         var pagos = movements.Where(m => m.Type == CardMovementType.Pago).Sum(m => m.Amount);
 
         var saldo = card.InitialBalance + consumos - pagos;
-        card.CurrentDebt = saldo < 0 ? 0 : saldo;
+        card.CurrentDebt = saldo;
 
         await creditCardRepository.UpdateAsync(card);
     }
