@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CreditCardPayment> CreditCardPayments => Set<CreditCardPayment>();
     public DbSet<CardMovement> CardMovements => Set<CardMovement>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<Income> Incomes => Set<Income>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +48,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasMany(u => u.Expenses)
                   .WithOne(e => e.User)
                   .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasMany(u => u.Incomes)
+                  .WithOne(i => i.User)
+                  .HasForeignKey(i => i.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -126,6 +132,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
             entity.Property(e => e.Amount).HasPrecision(18, 0);
             entity.Property(e => e.Type).HasConversion<int>();
+        });
+
+        // Ingreso extra mensual del usuario.
+        modelBuilder.Entity<Income>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.Description).IsRequired().HasMaxLength(500);
+            entity.Property(i => i.Amount).HasPrecision(18, 0);
+            entity.Property(i => i.Type).HasConversion<int>();
         });
     }
 }

@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:PPM.UI.ViewModels"
+             xmlns:dto="clr-namespace:PPM.Application.DTOs;assembly=PPM.Application"
+             mc:Ignorable="d" d:DesignWidth="720" d:DesignHeight="640"
+             x:Class="PPM.UI.Views.IncomesView"
+             x:DataType="vm:IncomesViewModel">
+    <Grid Margin="28" RowDefinitions="Auto,Auto,Auto,*">
+        <TextBlock Grid.Row="0" Text="Ingresos Extras" FontSize="26" FontWeight="Bold" Margin="0,0,0,12"
+                   Foreground="{StaticResource TextPrimaryBrush}" />
+
+        <!-- Resumen mensual -->
+        <Border Grid.Row="1" Padding="16" CornerRadius="12" Background="{StaticResource SurfaceBrush}"
+                BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Margin="0,0,0,10">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Resumen mensual" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Mes" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <NumericUpDown Width="110" Minimum="1" Maximum="12" Increment="1" FormatString="0" Value="{Binding SummaryMonth}" />
+                    <TextBlock Text="Año" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                    <NumericUpDown Width="140" Minimum="2000" Maximum="2100" Increment="1" FormatString="0" Value="{Binding SummaryYear}" />
+                    <Button Content="Ver" Command="{Binding RefreshSummaryCommand}" IsEnabled="{Binding !IsLoading}" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Total extra del mes" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBlock Text="{Binding MonthlyTotal, Converter={StaticResource Guarani}}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Mes anterior" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBlock Text="{Binding PreviousMonthTotal, Converter={StaticResource Guarani}}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Variación" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+                        <TextBlock Text="{Binding MonthDelta, Converter={StaticResource Guarani}}" FontWeight="Bold" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="{Binding MonthDeltaPercentage, StringFormat='{}{0} %'}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </StackPanel>
+                </Grid>
+                <TextBlock Text="Nota: el salario neto fijo NO se suma aquí, esto es solo para registrar extras (bonos, ventas, etc)." FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="2" Spacing="2" Margin="0,0,0,10">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource PositiveBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+
+        <Grid Grid.Row="3" ColumnDefinitions="*,320">
+            <!-- Lista -->
+            <Border Grid.Column="0" Margin="0,0,16,0" Padding="12" CornerRadius="12"
+                    Background="{StaticResource SurfaceBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" ColumnDefinitions="2*,*,*" Margin="4,0,4,6">
+                        <TextBlock Grid.Column="0" Text="Descripción" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="1" Text="Categoría" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Grid.Column="2" Text="Monto" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Grid>
+                    <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="dto:IncomeDto">
+                                <Grid ColumnDefinitions="2*,*,*">
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Description}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                        <TextBlock Text="{Binding Date, StringFormat='{}{0:dd/MM/yyyy}'}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding Type}" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Amount, Converter={StaticResource Guarani}}" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Formulario -->
+            <Border Grid.Column="1" Padding="16" CornerRadius="12"
+                    Background="{StaticResource SurfaceBrush}" BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                <ScrollViewer>
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Detalle del ingreso" FontWeight="SemiBold" FontSize="15" Foreground="{StaticResource TextPrimaryBrush}" />
+                        <TextBlock Text="Descripción" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBox Text="{Binding Description}" />
+                        <TextBlock Text="Monto (₲)" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <NumericUpDown Minimum="0" Increment="10000" FormatString="N0" Value="{Binding Amount}" />
+                        <TextBlock Text="Categoría" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch" />
+                        <TextBlock Text="Fecha" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <DatePicker SelectedDate="{Binding Date}" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+                            <Button Content="Nuevo" Command="{Binding NewCommand}" />
+                            <Button Content="Guardar" Classes="accent" Command="{Binding SaveCommand}" IsEnabled="{Binding !IsLoading}" />
+                            <Button Content="Eliminar" Command="{Binding DeleteCommand}" IsEnabled="{Binding IsEditing}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

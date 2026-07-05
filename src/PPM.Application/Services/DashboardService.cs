@@ -7,7 +7,8 @@ public class DashboardService(
     ISalaryService salaryService,
     IDebtService debtService,
     IExpenseService expenseService,
-    ICreditCardService creditCardService) : IDashboardService
+    ICreditCardService creditCardService,
+    IIncomeService incomeService) : IDashboardService
 {
     public async Task<DashboardDto> GetDashboardAsync(int userId)
     {
@@ -19,10 +20,11 @@ public class DashboardService(
         var ipsDiscount = grossSalary - netSalary;
 
         var debts = (await debtService.GetAllAsync(userId)).ToList();
-        var activeDebts = debts.Where(d => d.Status == DebtStatus.Active).ToList();
+        var activeDebts = debts.Where(d => d.Status == DebtStatus.Activa).ToList();
         var totalMonthlyDebts = activeDebts.Sum(d => d.MonthlyPayment);
 
         var totalMonthlyExpenses = await expenseService.GetMonthlyTotalAsync(userId, now.Month, now.Year);
+        var totalMonthlyIncomes = await incomeService.GetMonthlyTotalAsync(userId, now.Month, now.Year);
 
         var cards = (await creditCardService.GetAllAsync(userId)).ToList();
         var totalCreditDebt = cards.Sum(c => c.CurrentDebt);
@@ -30,9 +32,10 @@ public class DashboardService(
         // Cada tarjeta tiene su propia tasa, así que sumamos el interés de una por una.
         var totalCreditInterest = cards.Sum(c => c.MonthlyInterest);
 
-        // Lo que realmente le queda al usuario parte del salario neto (ya sin el IPS)
+        // Lo que realmente le queda al usuario parte del salario neto + ingresos extras
         // y le restamos las cuotas de deudas, los gastos y el mínimo de las tarjetas.
         var availableBalance = netSalary
+            + totalMonthlyIncomes
             - totalMonthlyDebts
             - totalMonthlyExpenses
             - totalCreditMinimumPayments;
@@ -48,6 +51,7 @@ public class DashboardService(
             TotalCreditMinimumPayments: totalCreditMinimumPayments,
             TotalCreditInterest: totalCreditInterest,
             GrossSalary: grossSalary,
-            IpsDiscount: ipsDiscount);
+            IpsDiscount: ipsDiscount,
+            TotalMonthlyIncomes: totalMonthlyIncomes);
     }
 }

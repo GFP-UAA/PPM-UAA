@@ -41,6 +41,9 @@ public partial class ShellViewModel(IServiceProvider services) : ViewModelBase
     private Task NavigateExpensesAsync() => NavigateAsync<ExpensesViewModel>("Gastos");
 
     [RelayCommand]
+    private Task NavigateIncomesAsync() => NavigateAsync<IncomesViewModel>("Ingresos");
+
+    [RelayCommand]
     private Task NavigateAboutAsync() => NavigateAsync<AboutViewModel>("Acerca de");
 
     [RelayCommand]

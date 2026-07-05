@@ -43,6 +43,7 @@ public partial class App : Avalonia.Application
         services.AddScoped<IDebtRepository, DebtRepository>();
         services.AddScoped<ICreditCardRepository, CreditCardRepository>();
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
+        services.AddScoped<IIncomeRepository, IncomeRepository>();
 
         // Casos de uso (lógica de la aplicación)
         services.AddScoped<IAuthService, AuthService>();
@@ -50,6 +51,7 @@ public partial class App : Avalonia.Application
         services.AddScoped<IDebtService, DebtService>();
         services.AddScoped<ICreditCardService, CreditCardService>();
         services.AddScoped<IExpenseService, ExpenseService>();
+        services.AddScoped<IIncomeService, IncomeService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IExportService, CsvExportService>();
 
@@ -65,6 +67,7 @@ public partial class App : Avalonia.Application
         services.AddTransient<DebtsViewModel>();
         services.AddTransient<CreditCardsViewModel>();
         services.AddTransient<ExpensesViewModel>();
+        services.AddTransient<IncomesViewModel>();
         services.AddTransient<AboutViewModel>();
 
         var provider = services.BuildServiceProvider();
