@@ -1,6 +1,8 @@
 using PPM.Application.DTOs;
 using PPM.Domain.Entities;
 using PPM.Domain.Interfaces;
+using PPM.Domain.Exceptions;
+using System;
 
 namespace PPM.Application.Services;
 
@@ -8,22 +10,38 @@ public class DebtService(IDebtRepository debtRepository) : IDebtService
 {
     public async Task<DebtDto> CreateAsync(CreateDebtDto dto)
     {
-        var debt = new Debt
+        if (string.IsNullOrWhiteSpace(dto.EntityName))
+            throw new BusinessRuleException("El nombre de la entidad es obligatorio.");
+        if (dto.InstallmentAmount <= 0)
+            throw new BusinessRuleException("El monto de la cuota debe ser mayor a cero.");
+        if (!dto.IsOpenEnded && (dto.TermMonths is null || dto.TermMonths <= 0))
+            throw new BusinessRuleException("El plazo en meses debe ser mayor a cero (o marcá plazo indefinido).");
+        if (dto.CurrentInstallment < 0)
+            throw new BusinessRuleException("El número de cuota actual no puede ser negativo.");
+
+        try
         {
-            UserId = dto.UserId,
-            EntityName = dto.EntityName,
-            ProductOrService = dto.ProductOrService,
-            Description = dto.Description,
-            InstallmentAmount = dto.InstallmentAmount,
-            TermMonths = dto.IsOpenEnded ? null : dto.TermMonths,
-            IsOpenEnded = dto.IsOpenEnded,
-            CurrentInstallment = dto.CurrentInstallment,
-            StartDate = dto.StartDate
-        };
+            var debt = new Debt
+            {
+                UserId = dto.UserId,
+                EntityName = dto.EntityName,
+                ProductOrService = dto.ProductOrService,
+                Description = dto.Description,
+                InstallmentAmount = dto.InstallmentAmount,
+                TermMonths = dto.IsOpenEnded ? null : dto.TermMonths,
+                IsOpenEnded = dto.IsOpenEnded,
+                CurrentInstallment = dto.CurrentInstallment,
+                StartDate = dto.StartDate
+            };
 
-        await debtRepository.AddAsync(debt);
+            await debtRepository.AddAsync(debt);
 
-        return MapToDto(debt);
+            return MapToDto(debt);
+        }
+        catch (Exception ex)
+        {
+            throw new BusinessRuleException($"Error al crear la deuda: {ex.Message}");
+        }
     }
 
     public async Task<IEnumerable<DebtDto>> GetAllAsync(int userId)
@@ -40,6 +58,15 @@ public class DebtService(IDebtRepository debtRepository) : IDebtService
 
     public async Task<bool> UpdateAsync(UpdateDebtDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.EntityName))
+            throw new BusinessRuleException("El nombre de la entidad es obligatorio.");
+        if (dto.InstallmentAmount <= 0)
+            throw new BusinessRuleException("El monto de la cuota debe ser mayor a cero.");
+        if (!dto.IsOpenEnded && (dto.TermMonths is null || dto.TermMonths <= 0))
+            throw new BusinessRuleException("El plazo en meses debe ser mayor a cero (o marcá plazo indefinido).");
+        if (dto.CurrentInstallment < 0)
+            throw new BusinessRuleException("El número de cuota actual no puede ser negativo.");
+
         try
         {
             var debt = await debtRepository.GetByIdAsync(dto.Id);
@@ -58,9 +85,9 @@ public class DebtService(IDebtRepository debtRepository) : IDebtService
             await debtRepository.UpdateAsync(debt);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new BusinessRuleException($"Error al actualizar la deuda: {ex.Message}");
         }
     }
 
@@ -71,9 +98,9 @@ public class DebtService(IDebtRepository debtRepository) : IDebtService
             await debtRepository.DeleteAsync(id);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new BusinessRuleException($"Error al eliminar la deuda: {ex.Message}");
         }
     }
 

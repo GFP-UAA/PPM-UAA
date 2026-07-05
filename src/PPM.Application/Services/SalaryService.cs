@@ -1,6 +1,8 @@
 using PPM.Application.DTOs;
 using PPM.Domain.Entities;
 using PPM.Domain.Interfaces;
+using PPM.Domain.Exceptions;
+using System;
 
 namespace PPM.Application.Services;
 
@@ -8,17 +10,27 @@ public class SalaryService(ISalaryRepository salaryRepository) : ISalaryService
 {
     public async Task<SalaryDto> CreateAsync(CreateSalaryDto dto)
     {
-        var salary = new Salary
+        if (dto.Amount <= 0)
+            throw new BusinessRuleException("El monto del salario debe ser mayor a cero.");
+
+        try
         {
-            UserId = dto.UserId,
-            Amount = dto.Amount,
-            EffectiveFrom = dto.EffectiveFrom,
-            ContributesToIps = dto.ContributesToIps
-        };
+            var salary = new Salary
+            {
+                UserId = dto.UserId,
+                Amount = dto.Amount,
+                EffectiveFrom = dto.EffectiveFrom,
+                ContributesToIps = dto.ContributesToIps
+            };
 
-        await salaryRepository.AddAsync(salary);
+            await salaryRepository.AddAsync(salary);
 
-        return MapToDto(salary);
+            return MapToDto(salary);
+        }
+        catch (Exception ex)
+        {
+            throw new BusinessRuleException($"Error al registrar el salario: {ex.Message}");
+        }
     }
 
     public async Task<SalaryDto?> GetCurrentAsync(int userId)

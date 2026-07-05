@@ -1,6 +1,8 @@
 using PPM.Application.DTOs;
 using PPM.Domain.Entities;
 using PPM.Domain.Interfaces;
+using PPM.Domain.Exceptions;
+using System;
 
 namespace PPM.Application.Services;
 
@@ -8,20 +10,32 @@ public class ExpenseService(IExpenseRepository expenseRepository, ISalaryService
 {
     public async Task<ExpenseDto> CreateAsync(CreateExpenseDto dto)
     {
-        var expense = new Expense
+        if (string.IsNullOrWhiteSpace(dto.Description))
+            throw new BusinessRuleException("La descripción es obligatoria.");
+        if (dto.Amount <= 0)
+            throw new BusinessRuleException("El monto del gasto debe ser mayor a cero.");
+
+        try
         {
-            UserId = dto.UserId,
-            Description = dto.Description,
-            Amount = dto.Amount,
-            Type = dto.Type,
-            Date = dto.Date,
-            Month = dto.Date.Month,
-            Year = dto.Date.Year
-        };
+            var expense = new Expense
+            {
+                UserId = dto.UserId,
+                Description = dto.Description,
+                Amount = dto.Amount,
+                Type = dto.Type,
+                Date = dto.Date,
+                Month = dto.Date.Month,
+                Year = dto.Date.Year
+            };
 
-        await expenseRepository.AddAsync(expense);
+            await expenseRepository.AddAsync(expense);
 
-        return MapToDto(expense);
+            return MapToDto(expense);
+        }
+        catch (Exception ex)
+        {
+            throw new BusinessRuleException($"Error al registrar el gasto: {ex.Message}");
+        }
     }
 
     public async Task<IEnumerable<ExpenseDto>> GetAllAsync(int userId)
@@ -38,6 +52,11 @@ public class ExpenseService(IExpenseRepository expenseRepository, ISalaryService
 
     public async Task<bool> UpdateAsync(UpdateExpenseDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Description))
+            throw new BusinessRuleException("La descripción es obligatoria.");
+        if (dto.Amount <= 0)
+            throw new BusinessRuleException("El monto del gasto debe ser mayor a cero.");
+
         try
         {
             var expense = await expenseRepository.GetByIdAsync(dto.Id);
@@ -54,9 +73,9 @@ public class ExpenseService(IExpenseRepository expenseRepository, ISalaryService
             await expenseRepository.UpdateAsync(expense);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new BusinessRuleException($"Error al actualizar el gasto: {ex.Message}");
         }
     }
 
@@ -67,9 +86,9 @@ public class ExpenseService(IExpenseRepository expenseRepository, ISalaryService
             await expenseRepository.DeleteAsync(id);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new BusinessRuleException($"Error al eliminar el gasto: {ex.Message}");
         }
     }
 
