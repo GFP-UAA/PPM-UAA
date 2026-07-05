@@ -74,7 +74,7 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
         InstallmentAmount = 0;
         IsOpenEnded = false;
         TermMonths = 1;
-        CurrentInstallment = 0;
+        CurrentInstallment = 1;
         StartDate = DateTimeOffset.Now;
         Status = DebtStatus.Active;
         OnPropertyChanged(nameof(IsEditing));
@@ -103,9 +103,17 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
             ErrorMessage = "El plazo en meses debe ser mayor a cero (o marcá plazo indefinido).";
             return;
         }
-        if (CurrentInstallment is null || CurrentInstallment < 0)
+        if (CurrentInstallment is null || CurrentInstallment <= 0)
         {
-            ErrorMessage = "El número de cuota actual no puede ser negativo.";
+            ErrorMessage = "La cuota actual debe ser mayor o igual a 1.";
+            return;
+        }
+        if (!IsOpenEnded &&
+            TermMonths is not null &&
+            CurrentInstallment is not null &&
+            CurrentInstallment > TermMonths)
+        {
+            ErrorMessage = "La cuota actual no puede ser mayor que la cantidad total de cuotas.";
             return;
         }
 
