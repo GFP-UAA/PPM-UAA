@@ -14,7 +14,7 @@ public class Debt
     public bool IsOpenEnded { get; set; }                         // Plazo indefinido (obligación recurrente)
     public int CurrentInstallment { get; set; }                   // Nro de cuota actual / ya pagada
     public DateTime StartDate { get; set; }
-    public DebtStatus Status { get; set; } = DebtStatus.Active;
+    public DebtStatus Status { get; set; } = DebtStatus.Activa;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public User User { get; set; } = null!;

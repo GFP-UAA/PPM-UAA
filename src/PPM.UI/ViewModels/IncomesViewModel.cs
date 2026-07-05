@@ -9,26 +9,25 @@ using PPM.Domain.Enums;
 
 namespace PPM.UI.ViewModels;
 
-public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleViewModelBase
+public partial class IncomesViewModel(IIncomeService incomeService) : ModuleViewModelBase
 {
-    public ObservableCollection<ExpenseDto> Items { get; } = [];
+    public ObservableCollection<IncomeDto> Items { get; } = [];
 
-    public ExpenseType[] Types { get; } = Enum.GetValues<ExpenseType>();
+    public IncomeType[] Types { get; } = Enum.GetValues<IncomeType>();
 
-    [ObservableProperty] private ExpenseDto? _selectedItem;
+    [ObservableProperty] private IncomeDto? _selectedItem;
 
     // --- Formulario ---
     [ObservableProperty] private int? _editingId;
     [ObservableProperty] private string _description = string.Empty;
     [ObservableProperty] private decimal? _amount;
-    [ObservableProperty] private ExpenseType _type = ExpenseType.Otros;
+    [ObservableProperty] private IncomeType _type = IncomeType.Otros;
     [ObservableProperty] private DateTimeOffset? _date = DateTimeOffset.Now;
 
     // --- Resumen mensual ---
     [ObservableProperty] private int? _summaryMonth = DateTime.Now.Month;
     [ObservableProperty] private int? _summaryYear = DateTime.Now.Year;
     [ObservableProperty] private decimal _monthlyTotal;
-    [ObservableProperty] private decimal _salaryPercentage;
     [ObservableProperty] private decimal _previousMonthTotal;
     [ObservableProperty] private decimal _monthDelta;
     [ObservableProperty] private decimal _monthDeltaPercentage;
@@ -38,8 +37,8 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
     public override Task LoadAsync() => RunGuardedAsync(async () =>
     {
         Items.Clear();
-        foreach (var e in await expenseService.GetAllAsync(UserId))
-            Items.Add(e);
+        foreach (var i in await incomeService.GetAllAsync(UserId))
+            Items.Add(i);
 
         await RefreshSummaryInternalAsync();
     });
@@ -49,12 +48,10 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
         if (SummaryMonth is null || SummaryYear is null)
             return;
 
-        var summary = await expenseService.GetMonthlySummaryAsync(UserId, SummaryMonth.Value, SummaryYear.Value);
-        MonthlyTotal = summary.Total;
-        SalaryPercentage = summary.SalaryPercentage;
+        MonthlyTotal = await incomeService.GetMonthlyTotalAsync(UserId, SummaryMonth.Value, SummaryYear.Value);
 
         var prev = new DateTime(SummaryYear.Value, SummaryMonth.Value, 1).AddMonths(-1);
-        PreviousMonthTotal = await expenseService.GetMonthlyTotalAsync(UserId, prev.Month, prev.Year);
+        PreviousMonthTotal = await incomeService.GetMonthlyTotalAsync(UserId, prev.Month, prev.Year);
         MonthDelta = MonthlyTotal - PreviousMonthTotal;
         MonthDeltaPercentage = PreviousMonthTotal > 0
             ? Math.Round(MonthDelta / PreviousMonthTotal * 100, 2)
@@ -64,7 +61,7 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
     [RelayCommand]
     private Task RefreshSummaryAsync() => RunGuardedAsync(RefreshSummaryInternalAsync);
 
-    partial void OnSelectedItemChanged(ExpenseDto? value)
+    partial void OnSelectedItemChanged(IncomeDto? value)
     {
         if (value is null)
             return;
@@ -86,7 +83,7 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
         EditingId = null;
         Description = string.Empty;
         Amount = 0;
-        Type = ExpenseType.Otros;
+        Type = IncomeType.Otros;
         Date = DateTimeOffset.Now;
         OnPropertyChanged(nameof(IsEditing));
         StatusMessage = null;
@@ -101,12 +98,12 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
 
         if (string.IsNullOrWhiteSpace(Description))
         {
-            ErrorMessage = "La descripción del gasto es obligatoria.";
+            ErrorMessage = "La descripción del ingreso extra es obligatoria.";
             return;
         }
         if (Amount is null || Amount <= 0)
         {
-            ErrorMessage = "El monto del gasto debe ser mayor a cero.";
+            ErrorMessage = "El monto del ingreso extra debe ser mayor a cero.";
             return;
         }
 
@@ -114,13 +111,15 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
         {
             if (EditingId is null)
             {
-                await expenseService.CreateAsync(new CreateExpenseDto(UserId, Description, Amount.Value, Type, (Date ?? DateTimeOffset.Now).DateTime));
-                StatusMessage = "Gasto creado correctamente.";
+                var dt = (Date ?? DateTimeOffset.Now).DateTime;
+                await incomeService.CreateAsync(new CreateIncomeDto(UserId, Description, Amount.Value, Type, dt, dt.Month, dt.Year));
+                StatusMessage = "Ingreso extra registrado correctamente.";
             }
             else
             {
-                var ok = await expenseService.UpdateAsync(new UpdateExpenseDto(EditingId.Value, Description, Amount.Value, Type, (Date ?? DateTimeOffset.Now).DateTime));
-                StatusMessage = ok ? "Gasto actualizado correctamente." : "No se pudo actualizar el gasto.";
+                // Solo permitimos crear o eliminar por ahora, ya que IncomeService no tiene UpdateAsync.
+                ErrorMessage = "La edición no está implementada, por favor elimina y crea uno nuevo.";
+                return;
             }
 
             await LoadAsync();
@@ -133,14 +132,14 @@ public partial class ExpensesViewModel(IExpenseService expenseService) : ModuleV
     {
         if (EditingId is null)
         {
-            ErrorMessage = "Seleccioná un gasto para eliminar.";
+            ErrorMessage = "Seleccioná un ingreso extra para eliminar.";
             return;
         }
 
         await RunGuardedAsync(async () =>
         {
-            var ok = await expenseService.DeleteAsync(EditingId.Value);
-            StatusMessage = ok ? "Gasto eliminado." : "No se pudo eliminar el gasto.";
+            await incomeService.DeleteAsync(EditingId.Value);
+            StatusMessage = "Ingreso extra eliminado.";
             await LoadAsync();
             New();
         });

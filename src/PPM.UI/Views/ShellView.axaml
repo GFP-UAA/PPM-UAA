@@ -41,6 +41,8 @@
                             Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Dashboard}" />
                     <Button Classes="nav" Command="{Binding NavigateSalaryCommand}" Content="Salario"
                             Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Salario}" />
+                    <Button Classes="nav" Command="{Binding NavigateIncomesCommand}" Content="Ingresos"
+                            Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Ingresos}" />
                     <Button Classes="nav" Command="{Binding NavigateDebtsCommand}" Content="Deudas"
                             Background="{Binding ActiveModule, Converter={StaticResource ModuleActive}, ConverterParameter=Deudas}" />
                     <Button Classes="nav" Command="{Binding NavigateCreditCardsCommand}" Content="Tarjetas"

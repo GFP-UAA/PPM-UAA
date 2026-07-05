@@ -2,7 +2,7 @@ namespace PPM.Domain.Enums;
 
 public enum DebtStatus
 {
-    Active,
-    Paid,
-    Overdue
+    Activa = 0,
+    Pagada = 1,
+    Atrasada = 2
 }

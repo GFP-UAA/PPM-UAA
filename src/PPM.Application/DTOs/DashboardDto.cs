@@ -11,5 +11,6 @@ public record DashboardDto(
     decimal TotalCreditMinimumPayments,
     decimal TotalCreditInterest,
     decimal GrossSalary,            // Salario bruto declarado
-    decimal IpsDiscount             // Descuento por aporte al IPS (bruto - neto)
+    decimal IpsDiscount,            // Descuento por aporte al IPS (bruto - neto)
+    decimal TotalMonthlyIncomes     // Ingresos extras del mes
 );

@@ -27,7 +27,7 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
     [ObservableProperty] private bool _isOpenEnded;
     [ObservableProperty] private int? _currentInstallment;
     [ObservableProperty] private DateTimeOffset? _startDate = DateTimeOffset.Now;
-    [ObservableProperty] private DebtStatus _status = DebtStatus.Active;
+    [ObservableProperty] private DebtStatus _status = DebtStatus.Activa;
 
     public bool IsEditing => EditingId is not null;
 
@@ -76,7 +76,7 @@ public partial class DebtsViewModel(IDebtService debtService) : ModuleViewModelB
         TermMonths = 1;
         CurrentInstallment = 1;
         StartDate = DateTimeOffset.Now;
-        Status = DebtStatus.Active;
+        Status = DebtStatus.Activa;
         OnPropertyChanged(nameof(IsEditing));
         StatusMessage = null;
         ErrorMessage = null;

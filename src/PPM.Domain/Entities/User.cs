@@ -15,4 +15,5 @@ public class User
     public ICollection<Debt> Debts { get; set; } = [];
     public ICollection<CreditCard> CreditCards { get; set; } = [];
     public ICollection<Expense> Expenses { get; set; } = [];
+    public ICollection<Income> Incomes { get; set; } = [];
 }
