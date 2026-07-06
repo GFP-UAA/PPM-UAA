@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM — Personal Process Manager | Documentación Técnica</title>
+    <style>
+        /* --- VARIABLES Y CONFIGURACIÓN BASE --- */
+        :root {
+            --bg-color: #faf8f5;
+            --text-color: #1e293b;
+            --primary-color: #0f172a;
+            --accent-color: #475569;
+            --border-color: #e2e8f0;
+            --zebra-color: #f1f5f9;
+            --accent-light: #e2e8f0;
+            --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* --- CONFIGURACIÓN DE PÁGINA (IMPRESIÓN / PDF) --- */
+        @page {
+            size: A4;
+            margin: 20mm 15mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-stack);
+            font-size: 11pt;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- LAYOUT VERTICAL OPTIMIZADO --- */
+        .main-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: block; /* Mantiene el flujo lineal puro para evitar errores de compilación PDF */
+        }
+
+        /* --- PORTADA ELEGANTE (OCUPA PRIMERA PÁGINA) --- */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 85vh;
+            page-break-after: always;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 40px;
+        }
+
+        .cover-title-container {
+            margin-bottom: 60px;
+        }
+
+        .cover-tag {
+            font-size: 10pt;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .cover-title {
+            font-size: 32pt;
+            color: var(--primary-color);
+            margin: 0;
+            line-height: 1.1;
+            font-weight: 800;
+        }
+
+        .cover-subtitle {
+            font-size: 16pt;
+            color: var(--accent-color);
+            margin-top: 10px;
+            font-weight: 400;
+        }
+
+        .cover-metadata {
+            display: table;
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            width: 100%;
+        }
+
+        .metadata-row {
+            display: table-row;
+        }
+
+        .metadata-label, .metadata-value {
+            display: table-cell;
+            padding: 6px 10px;
+            font-size: 10.5pt;
+        }
+
+        .metadata-label {
+            font-weight: 600;
+            color: var(--accent-color);
+            width: 30%;
+        }
+
+        /* --- ELEMENTOS CONTENIDO Y EVITACIÓN DE HÚERFANOS --- */
+        h1, h2, h3, h4 {
+            color: var(--primary-color);
+            font-family: var(--font-stack);
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+
+        h1 {
+            font-size: 20pt;
+            margin-top: 40px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 14pt;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 12px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 12pt;
+            margin-top: 20px;
+            color: var(--accent-color);
+        }
+
+        p, ul, ol {
+            margin-top: 0;
+            margin-bottom: 16px;
+            text-align: justify;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        /* Evitar rupturas a mitad de elementos atómicos */
+        table, pre, blockquote, .note-box, .tip-box {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* --- TABLAS ESTILIZADAS --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 10pt;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 12px;
+            border: 1px solid var(--primary-color);
+        }
+
+        td {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--zebra-color);
+        }
+
+        /* --- CUADROS DE DESTACADOS (NOTAS / TIPS) --- */
+        .note-box, .tip-box {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 10.5pt;
+        }
+
+        .note-box {
+            background-color: #f1f5f9;
+            border-left: 4px solid #64748b;
+        }
+
+        .tip-box {
+            background-color: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            color: #14532d;
+        }
+
+        .box-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-size: 9pt;
+            letter-spacing: 1px;
+            display: block;
+        }
+
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: rgba(0,0,0,0.05);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 9.5pt;
+        }
+
+        /* --- INTERACTIVIDAD EN PANTALLA (SIDEBAR TOC) --- */
+        .toc-sidebar {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            width: 260px;
+            max-height: 80vh;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .toc-sidebar h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 11pt;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .toc-sidebar ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .toc-sidebar li {
+            margin-bottom: 8px;
+            font-size: 9.5pt;
+        }
+
+        .toc-sidebar a {
+            color: var(--text-color);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .toc-sidebar a:hover, .toc-sidebar a.active {
+            color: #3b82f6;
+            font-weight: 600;
+            padding-left: 4px;
+            border-left: 2px solid #3b82f6;
+        }
+
+        /* Ajuste de margen del wrapper cuando el menú lateral está activo en pantallas grandes */
+        @media screen and (min-width: 1300px) {
+            .main-wrapper {
+                margin-left: calc(50% - 500px);
+            }
+        }
+
+        /* Ocultar elementos interactivos/pantalla al imprimir y ajustar fondo */
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+            .toc-sidebar {
+                display: none !important;
+            }
+            .main-wrapper {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .cover-page {
+                height: 95vh; /* Ajuste preciso para forzar el salto de página limpio en PDF */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="toc-sidebar" id="sidebarTOC">
+        <h3>Índice</h3>
+        <ul>
+            <li><a href="#sec01">01. Descripción General</a></li>
+            <li><a href="#sec02">02. Stack Tecnológico</a></li>
+            <li><a href="#sec03">03. Módulos Funcionales</a></li>
+            <li><a href="#sec04">04. Lineamientos UI / UX</a></li>
+            <li><a href="#sec05">05. Modelo de Base de Datos</a></li>
+            <li><a href="#sec06">06. Requerimientos Acadómicos</a></li>
+            <li><a href="#sec07">07. Entregables del Proyecto</a></li>
+        </ul>
+    </nav>
+
+    <div class="main-wrapper">
+
+        <header class="cover-page">
+            <div class="cover-title-container">
+                <span class="cover-tag">Documentación Técnica Actualizada</span>
+                <h1 class="cover-title">PPM — Personal Process Manager</h1>
+                <p class="cover-subtitle">Sistema integral de administración de finanzas personales</p>
+            </div>
+            
+            <div class="cover-metadata">
+                <div class="metadata-row">
+                    <div class="metadata-label">Versión</div>
+                    <div class="metadata-value">1.1 — Basada en código fuente</div>
+                </div>
+                <div class="metadata-row">
+                    <div class="metadata-label">Plataforma</div>
+                    <div class="metadata-value">Desktop — Windows / macOS / Linux (Avalonia UI)</div>
+                </div>
+                <div class="metadata-row">
+                    <div class="metadata-label">Moneda Base</div>
+                    <div class="metadata-value">Guaraní Paraguayo (₲)</div>
+                </div>
+                <div class="metadata-row">
+                    <div class="metadata-label">Estado</div>
+                    <div class="metadata-value">En desarrollo</div>
+                </div>
+            </div>
+        </header>
+
+        <section id="sec01">
+            <h1>SECCIÓN 01: Descripción General del Proyecto</h1>
+            
+            <h2>¿Qué es PPM?</h2>
+            <p>PPM (Personal Process Manager) es una aplicación de escritorio diseñada para que el usuario pueda administrar sus finanzas personales de manera integral, visualizando su situación económica en el pasado, el presente y el futuro.</p>
+            <p>El sistema gira en torno al <strong>salario</strong> y otros <strong>ingresos</strong> declarados por el usuario. A partir de estos valores se calculan automáticamente todos los indicadores financieros: saldo disponible, proyecciones de deuda, carga mensual de gastos y estado detallado de tarjetas de crédito.</p>
+
+            <h2>Objetivos del sistema</h2>
+            <ul>
+                <li><strong>1. Centralizar la información financiera:</strong> Concentrar toda la data del usuario en un solo lugar seguro. (Alta)</li>
+                <li><strong>2. Automatización del saldo:</strong> Calcular automáticamente el saldo disponible en base al salario y otros ingresos. (Alta)</li>
+                <li><strong>3. Proyección temporal:</strong> Registrar y proyectar deudas a lo largo del tiempo de forma visual. (Alta)</li>
+                <li><strong>4. Gestión avanzada de crédito:</strong> Controlar tarjetas de crédito con historial de movimientos, cálculo de intereses y pagos mínimos. (Alta)</li>
+                <li><strong>5. Control de egresos:</strong> Registrar gastos mensuales y permitir su comparación activa con períodos anteriores. (Alta)</li>
+                <li><strong>6. Monitoreo en tiempo real:</strong> Proveer un dashboard unificado con el estado financiero consolidado. (Alta)</li>
+                <li><strong>7. Dinamismo salarial:</strong> Permitir actualizar el salario dinámicamente y reflejar el cambio en cascada de forma automática. (Media)</li>
+                <li><strong>8. Portabilidad de datos:</strong> Exportar resúmenes financieros estructurados en archivos de texto plano. (Media)</li>
+            </ul>
+
+            <h2>Alcance</h2>
+            <p>La aplicación corre de forma <strong>100% local</strong>, sin dependencias externas de conexión a internet. Los datos se almacenan de manera persistente en una base de datos SQLite en el equipo del usuario. La aplicación garantiza compatibilidad nativa con Windows, macOS y Linux gracias a su desarrollo sobre Avalonia UI.</p>
+
+            <div class="note-box">
+                <span class="box-title">Nota de configuración monetaria</span>
+                La moneda base del sistema es el Guaraní Paraguayo (₲). Todos los campos numéricos se autoformatean con puntos de miles integrados y no admiten valores decimales bajo ninguna regla del negocio.
+            </div>
+        </section>
+
+        <section id="sec02">
+            <h1>SECCIÓN 02: Stack Tecnológico</h1>
+            <p>El núcleo técnico se sustenta sobre arquitecturas robustas estandarizadas para el ecosistema corporativo local.</p>
+
+            <h2>Componentes Backend</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Componente</th>
+                        <th style="width: 35%;">Tecnología</th>
+                        <th style="width: 40%;">Detalle Técnico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Lenguaje</strong></td>
+                        <td>C#</td>
+                        <td>Entorno de ejecución moderno sobre .NET 8</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ORM</strong></td>
+                        <td>Entity Framework Core</td>
+                        <td>Versión 8.0.x para mapeo relacional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Base de datos</strong></td>
+                        <td>SQLite</td>
+                        <td>Archivo estructurado local <code>.db</code> sin motor externo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Encriptación</strong></td>
+                        <td>BCrypt.Net-Next</td>
+                        <td>Paquete NuGet avanzado con adición automática de Hash + Salt</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Arquitectura</strong></td>
+                        <td>Clean Architecture</td>
+                        <td>Desacoplamiento estricto por capas: Domain / Application / Infrastructure / UI</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Patrón de datos</strong></td>
+                        <td>Repository Pattern</td>
+                        <td>Interfaces fuertemente tipadas y definidas en la capa Domain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inyección de dep.</strong></td>
+                        <td>MS DependencyInjection</td>
+                        <td>Contenedor nativo integrado por defecto en .NET 8</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Componentes Frontend</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Componente</th>
+                        <th style="width: 35%;">Tecnología</th>
+                        <th style="width: 40%;">Detalle Técnico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Framework UI</strong></td>
+                        <td>Avalonia UI</td>
+                        <td>Renderizado nativo multiplataforma (Windows / macOS / Linux)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Patrón UI</strong></td>
+                        <td>MVVM</td>
+                        <td>Patrón estricto Model-View-ViewModel para separar lógica e interfaz</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Binding toolkit</strong></td>
+                        <td>CommunityToolkit.Mvvm</td>
+                        <td>Uso nativo de atributos de compilación <code>ObservableProperty</code> y <code>RelayCommand</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Estilos</strong></td>
+                        <td>Avalonia Styles</td>
+                        <td>Diseño UI minimalista y limpio personalizado en diccionarios XAML</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Arquitectura de capas</h2>
+            <p>El proyecto se organiza bajo los principios estrictos de Clean Architecture, garantizando que ninguna capa interna posea conocimientos de capas externas:</p>
+            <ul>
+                <li><strong>PPM.Domain:</strong> Núcleo puro del negocio. Contiene Entidades, enumeradores (<code>IncomeType</code>, <code>ExpenseType</code>, etc.) e interfaces de repositorio primarias. Cero dependencias externas.</li>
+                <li><strong>PPM.Application:</strong> Casos de uso de la aplicación y la orquestación de flujos. Conoce únicamente la capa Domain.</li>
+                <li><strong>PPM.Infrastructure:</strong> Implementación de repositorios de datos y el <code>DbContext</code> de persistencia usando EF Core + SQLite.</li>
+                <li><strong>PPM.UI:</strong> Vistas estructuradas en Avalonia, ViewModels reactivos (MVVM) y la configuración del inyector de dependencias global.</li>
+            </ul>
+        </section>
+
+        <section id="sec03">
+            <h1>SECCIÓN 03: Módulos Funcionales</h1>
+
+            <h2>3.1 Autenticación y Registro (Users)</h2>
+            <p>El sistema cuenta con una pantalla segura de inicio de sesión y registro de credenciales.</p>
+            <ul>
+                <li>Validaciones lógicas directas contra la base de datos local (tabla <code>User</code>).</li>
+                <li>Contraseñas protegidas mediante algoritmos asimétricos <code>BCrypt</code> (nunca almacenadas en texto plano).</li>
+            </ul>
+
+            <h2>3.2 Módulo de Salarios e Ingresos Adicionales (Salaries / Incomes)</h2>
+            <ul>
+                <li><strong>Salario:</strong> El usuario declara su salario mensual neto bajo la entidad <code>Salary</code>. La plataforma almacena y grafica de forma inmutable el histórico completo de cambios salariales.</li>
+                <li><strong>Ingresos Adicionales:</strong> Registro ágil de entradas extraordinarias (entidad <code>Income</code>) categorizadas explícitamente por tipo: <code>Bono</code>, <code>Freelance</code>, <code>Regalo</code>, <code>Venta</code> u <code>Otros</code>.</li>
+                <li>Los estados del balance financiero global se recalculan integrando en tiempo real la sumatoria del salario activo más los ingresos devengados en el mes en curso.</li>
+            </ul>
+
+            <h2>3.3 Módulo de Deudas (Debts)</h2>
+            <p>Permite registrar compromisos financieros fijos a mediano y largo plazo, tales como préstamos bancarios o compras financiadas en cuotas.</p>
+            <ul>
+                <li><strong>Campos del sistema:</strong> Nombre identificativo, Descripción, Monto Total, Plazo estipulado en meses y Estado actual (<code>Pending</code>, <code>Paid</code>).</li>
+                <li><strong>Procesamiento automatizado:</strong> Cálculo matemático de la cuota mensual estimada, totales acumulados y balance neto de deuda restante.</li>
+            </ul>
+
+            <h2>3.4 Módulo de Tarjetas de Crédito (CreditCards / CardMovements)</h2>
+            <p>Seguimiento avanzado de líneas de crédito activas.</p>
+            <ul>
+                <li><strong>Campos de tarjeta:</strong> Nombre de la entidad, Límite de crédito asignado, Tasa de interés efectiva y Fechas fijadas de cierre/vencimiento.</li>
+                <li><strong>Movimientos de control (<code>CardMovement</code>):</strong> Historial detallado por cada tipo de transacción (<code>Consumo</code> o <code>Pago</code>).</li>
+                <li><strong>Automatización de intereses:</strong> El interés compuesto generado al corte se asienta de manera automática como un consumo bajo el concepto descriptivo "Interés de cierre", manteniendo la integridad exacta del saldo cuadrado.</li>
+            </ul>
+
+            <h2>3.5 Módulo de Gastos Mensuales (Expenses)</h2>
+            <p>Permite mapear con precisión quirúrgica las salidas de dinero cotidianas del mes.</p>
+            <ul>
+                <li><strong>Estructura:</strong> Descripción detallada, Monto y Tipo de gasto clasificado semánticamente (<code>Housing</code>, <code>Food</code>, <code>Transport</code>, <code>Entertainment</code>, <code>Health</code>, <code>Other</code>).</li>
+                <li><strong>Lógica analítica:</strong> Totalización instantánea de consumos del mes activo y métricas comparativas directas contra el periodo mensual inmediato anterior.</li>
+            </ul>
+
+            <h2>3.6 Dashboard Principal</h2>
+            <p>Consolidación y visualización inmediata de datos económicos críticos para el usuario a través de una sola vista fluida:</p>
+            <ul>
+                <li>Saldo global disponible y remanente estimado.</li>
+                <li>Mapeo de deudas activas junto a su impacto en la carga financiera mensual.</li>
+                <li>Resumen analítico ejecutivo de tarjetas vigentes y distribución de gastos diarios.</li>
+            </ul>
+        </section>
+
+        <section id="sec04">
+            <h1>SECCIÓN 04: Lineamientos de UI / UX</h1>
+            <p>La interfaz sigue rigurosamente principios de diseño minimalista contemporáneo inspirados directamente en las <em>Apple Human Interface Guidelines</em>.</p>
+            <ul>
+                <li><strong>Jerarquía visual:</strong> Establecimiento estricto de pesos y contrastes tipográficos para guiar el flujo ocular del usuario sin saturación de componentes.</li>
+                <li><strong>Feedback inmediato:</strong> Respuestas visuales interactivas instantáneas en controles de entrada de datos y transiciones de carga de registros.</li>
+                <li><strong>Formato de moneda nativo:</strong> Inyección forzada de separadores de miles tipográficos mediante punto (ej. 1.500.000 ₲). Ausencia total de decimales. El símbolo nativo (₲) opera de manera estricta como prefijo o sufijo según el espacio visual disponible.</li>
+            </ul>
+        </section>
+
+        <section id="sec05">
+            <h1>SECCIÓN 05: Modelo de Base de Datos</h1>
+            <p>Las tablas y entidades del esquema de persistencia se modelan exclusivamente en inglés, siguiendo los estándares internacionales de buenas prácticas en ingeniería de software.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30%;">Entidad (C#)</th>
+                        <th style="width: 30%;">Mapeo / Función BD</th>
+                        <th style="width: 40%;">Descripción del Dominio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>User</code></td>
+                        <td>Usuarios</td>
+                        <td>Datos de inicio de sesión de cuentas (username y hash seguro de contraseña).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Salary</code></td>
+                        <td>Salarios</td>
+                        <td>Historial inmutable de modificaciones de salarios mensuales declarados.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>Income</code></strong></td>
+                        <td>Ingresos Extras</td>
+                        <td>Estructura de ingresos adicionales categorizados mediante el enum <code>IncomeType</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Debt</code></td>
+                        <td>Deudas</td>
+                        <td>Registro de compromisos crediticios a plazos bajo bandera de control <code>DebtStatus</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>CreditCard</code></td>
+                        <td>Tarjetas</td>
+                        <td>Esquema maestro de límites de crédito, tasas contractuales y fechas operativas de corte.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>CardMovement</code></strong></td>
+                        <td>Libro de tarjeta</td>
+                        <td>Libro contable auxiliar de transacciones detalladas de consumos y abonos (<code>CardMovementType</code>).</td>
+                    </tr>
+                    <tr>
+                        <td><code>CreditCardPayment</code></td>
+                        <td>Pagos de tarjeta</td>
+                        <td>Historial histórico unificado de amortizaciones y pagos consolidados a plásticos de crédito.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Expense</code></td>
+                        <td>Gastos</td>
+                        <td>Registro y clasificación de salidas monetarias ligadas al enumerador estricto <code>ExpenseType</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="tip-box">
+                <span class="box-title">Línea de comandos de migración activa</span>
+                Para actualizar de manera consistente el esquema relacional local, ejecute el siguiente comando en la consola de desarrollo: <br>
+                <code>dotnet ef migrations add InitialCreate --project src/PPM.Infrastructure --startup-project src/PPM.UI</code>
+            </div>
+        </section>
+
+        <section id="sec06">
+            <h1>SECCIÓN 06: Requerimientos del Proyecto Académico</h1>
+            <p>Mapeo detallado del cumplimiento de las directrices de la Universidad Autónoma de Asunción (UAA) dentro de la arquitectura de la solución PPM.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Requerimiento UAA</th>
+                        <th style="width: 65%;">Implementación Real y Cobertura en PPM-UAA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>3 operaciones/consultas complejas</strong></td>
+                        <td>Procesamiento integrado del Dashboard, lógicas de proyección predictiva cruzada (Incomes vs Expenses) y reportes automatizados.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>6 CRUDs completos independientes</strong></td>
+                        <td>Módulos totalmente operativos con persistencia completa implementados para: <code>Users</code>, <code>Salaries</code>, <code>Debts</code>, <code>CreditCards</code>, <code>Incomes</code> y <code>Expenses</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lectura / escritura de archivos externos</strong></td>
+                        <td>Módulo central en desarrollo enfocado en la exportación estructurada de resúmenes financieros mensuales a ficheros físicos de texto legible.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Menú principal modular</strong></td>
+                        <td>Interfaz moderna responsiva basada en Avalonia UI estructurada con un Sidebar de navegación fluida por vistas lógicas desacopladas.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Login seguro y encriptado</strong></td>
+                        <td>Mecanismo de seguridad nativo implementado en la infraestructura mediante hashing criptográfico con <code>BCrypt.Net-Next</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uso de Tipos Enumerados (Enums)</strong></td>
+                        <td>Estructuración y tipado fuerte a través de Enums clave: <code>ExpenseType</code>, <code>DebtStatus</code>, <code>UserRole</code>, <code>IncomeType</code> y <code>CardMovementType</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gestión robusta de Excepciones</strong></td>
+                        <td>Bloques de control estructurados <code>try/catch/finally</code> integrados de manera nativa en capas de repositorios de datos y ViewModels de interfaz.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Controles UI responsivos</strong></td>
+                        <td>Diseño de maquetación elástica mediante el uso avanzado de controles de distribución <code>Grid</code>, <code>StackPanel</code> y Data Binding reactivo bidireccional en archivos descriptivos <code>.axaml</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="sec07">
+            <h1>SECCIÓN 07: Entregables del Proyecto</h1>
+            <p>La estructura de empaquetado final para la entrega académica se organizará estrictamente bajo la siguiente jerarquía de archivos dentro del contenedor comprimido de la raíz:</p>
+            <ol>
+                <li><strong>1. Código Fuente Completo:</strong> Inclusión total de la solución global estructurada en el archivo <code>.sln</code> junto a los subproyectos desacoplados mapeados en el directorio relativo <code>/src</code>.</li>
+                <li><strong>2. Base de Datos Autoejecutable:</strong> Al iniciar el despliegue inicial de la solución, el ecosistema de persistencia <code>ppm.db</code> se autogenerará dinámicamente en el directorio local de compilación final gracias a la ejecución nativa de los scripts de migración de Entity Framework Core.</li>
+                <li><strong>3. Documentación Técnica de Soporte:</strong> Inclusión íntegra del presente documento técnico de ingeniería en su versión actualizada y revisada.</li>
+            </ol>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = document.querySelectorAll('section');
+            const tocLinks = document.querySelectorAll('#sidebarTOC a');
+
+            // Implementación de Scroll Highlighter dinámico mediante Intersection Observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px 0px -60% 0px',
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        tocLinks.forEach(link => {
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            } else {
+                                link.classList.remove('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => observer.observe(section));
+
+            // Suavizado dinámico de clicks en el índice
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

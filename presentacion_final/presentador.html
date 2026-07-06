@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM - Panel de Control del Expositor</title>
+    
+    <!-- Fuentes Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js CSS (Para formatear código en la vista previa) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/presenter.css">
+    
+    <!-- Mermaid.js para Renderizar en la Vista Previa -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+</head>
+<body class="presenter-mode">
+
+    <!-- Cabecera de Estadísticas y Tiempos Sincronizados -->
+    <header class="presenter-header">
+        <div class="status-group">
+            <span class="label">Expositor Activo</span>
+            <span id="current-presenter" class="val highlight">Cargando...</span>
+        </div>
+        <div class="status-group">
+            <span class="label">Siguiente Expositor</span>
+            <span id="next-presenter" class="val">Cargando...</span>
+        </div>
+        
+        <div class="timer-container">
+            <div class="timer-box">
+                <span class="label">Tiempo Total (20m)</span>
+                <span id="main-timer" class="time-val">00:00</span>
+            </div>
+            <div class="timer-box">
+                <span class="label">Restante Defensa</span>
+                <span id="remaining-timer" class="time-val" style="color: var(--accent-emerald);">20:00</span>
+            </div>
+            <div class="timer-box">
+                <span class="label">Tiempo Diapositiva</span>
+                <span id="slide-timer" class="time-val">00:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Grid de Presentación -->
+    <div class="presenter-grid">
+        
+        <!-- Panel Izquierdo: Vista Previa y Siguiente -->
+        <section class="preview-panel">
+            
+            <!-- Vista Previa de Diapositiva Actual -->
+            <div class="slide-preview-wrapper">
+                <div class="preview-title">
+                    <span>VISTA PREVIA DEL PROYECTOR</span>
+                    <span id="preview-frag-counter">Paso 0 / 0</span>
+                </div>
+                <div class="slide-preview-container">
+                    <div id="preview-body" class="slide-content scaled-down">
+                        <!-- Clona visualmente lo que ve el público -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navegación Manual -->
+            <div class="navigation-controls">
+                <button id="btn-prev" disabled>← Anterior (Left/Backsp)</button>
+                <span id="slide-counter">Diapositiva 0 / 0</span>
+                <button id="btn-next">Siguiente (Right/Space) →</button>
+            </div>
+
+            <!-- Miniatura de Siguiente Diapositiva -->
+            <div class="next-slide-wrapper">
+                <div class="title-label">Siguiente Diapositiva:</div>
+                <div id="next-slide-title" class="next-slide-title">Título Diapositiva</div>
+                <div id="next-slide-desc" class="next-slide-desc">Resumen del contenido...</div>
+            </div>
+        </section>
+
+        <!-- Panel Derecho: Notas y Banco de Preguntas -->
+        <section class="notes-panel">
+            <!-- Pestañas de Control -->
+            <div class="notes-tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-guion')">Guion y Objetivos</button>
+                <button class="tab-btn" onclick="switchTab('tab-lenguaje')">Cues e Indicaciones</button>
+                <button class="tab-btn" onclick="switchTab('tab-preguntas')">Preguntas del Tribunal (<span id="questions-count">0</span>)</button>
+            </div>
+
+            <!-- Contenido de las Pestañas -->
+            <div class="tab-content-container">
+                
+                <!-- Pestaña 1: Guion y Objetivos -->
+                <div id="tab-guion" class="tab-pane active">
+                    <div class="note-card">
+                        <h4>Objetivo Pedagógico / de Negocio</h4>
+                        <p id="note-goal">Detalles del objetivo...</p>
+                    </div>
+                    <div class="note-card speech">
+                        <h4>Guion Sugerido (Speech Oral)</h4>
+                        <p id="note-speech" class="speech-text">Texto para decir en la exposición...</p>
+                    </div>
+                </div>
+
+                <!-- Pestaña 2: Cues e Indicaciones -->
+                <div id="tab-lenguaje" class="tab-pane">
+                    <div class="note-card cues">
+                        <h4>Notas Clave de Presentación (Tips)</h4>
+                        <ul id="note-cues" class="cues-list">
+                            <li>Indicaciones...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="metadata-grid">
+                        <div class="note-card">
+                            <h4>Palabras Clave (Keywords)</h4>
+                            <div id="note-keywords" class="tag-container">
+                                <!-- Generadas con JS -->
+                            </div>
+                        </div>
+                        <div class="note-card">
+                            <h4>Lenguaje Corporal</h4>
+                            <ul id="note-bodylanguage" class="cues-list" style="color: #A7F3D0;">
+                                <!-- Generados con JS -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="note-card" style="border-left-color: #EF4444; background: rgba(239, 68, 68, 0.02);">
+                        <h4>¡Qué NO Olvidar Mencionar!</h4>
+                        <ul id="note-dontforget" class="cues-list" style="color: #FECDD3;">
+                            <!-- Generados con JS -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Pestaña 3: Preguntas del Tribunal -->
+                <div id="tab-preguntas" class="tab-pane">
+                    <div id="questions-container" class="questions-list">
+                        <!-- Acordeón con las preguntas de esta slide -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Atajos al Pie -->
+    <footer class="shortcuts-footer">
+        <div><span class="shortcut-badge">Space</span>/<span class="shortcut-badge">Enter</span>/<span class="shortcut-badge">&rarr;</span> Siguiente</div>
+        <div><span class="shortcut-badge">&larr;</span> Anterior</div>
+        <div><span class="shortcut-badge">F</span> Fullscreen</div>
+        <div><span class="shortcut-badge">B</span> Pantalla Negra</div>
+        <div><span class="shortcut-badge">W</span> Pantalla Blanca</div>
+        <div><span class="shortcut-badge">G</span> Ir a Slide</div>
+        <div><span class="shortcut-badge">T</span> Reloj</div>
+    </footer>
+
+    <!-- Prism JS para Formatear Código en la Vista Previa -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+    <!-- Scripts Propios -->
+    <script src="js/slides.js"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/presenter.js"></script>
+</body>
+</html>
