@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPM - Defensa Técnica de Proyecto</title>
+    
+    <!-- Fuentes Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Prism.js CSS (C# Resaltado y Números de Línea) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+    
+    <!-- Estilos de la Diapositiva -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Mermaid.js para Renderizar Diagramas Dinámicos -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+</head>
+<body>
+
+    <!-- Reloj digital flotante (Toggles con tecla T) -->
+    <div id="index-clock" class="index-clock">00:00:00</div>
+
+    <!-- Contenedor Principal de la Diapositiva Activa -->
+    <main id="presentation-board" class="slide-container">
+        <div class="slide-content">
+            <h1 id="slide-title">Cargando presentación...</h1>
+            <h2 id="slide-subtitle"></h2>
+            <div id="slide-body">
+                <div class="slide-loading">Inicializando presentación de finanzas local...</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Barra de Progreso del Proyector -->
+    <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <!-- Capa de Bloqueo / Pantalla Blanca o Negra (Teclas B y W) -->
+    <div id="blank-overlay" class="blank-overlay"></div>
+
+    <!-- Scripts de Dependencias de Terceros -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+    <!-- Scripts Propios de la Aplicación -->
+    <script src="js/slides.js?v=2"></script>
+    <script src="js/sync.js"></script>
+    <script src="js/app.js?v=2"></script>
+</body>
+</html>
